@@ -5,27 +5,31 @@
 -- 3. How you name the fields.
 -- In this assignment we will use PostgreSQL as the database.
 
--- Create table for estates
-CREATE TABLE estates (
+CREATE TABLE IF NOT EXISTS estates (
     id SERIAL PRIMARY KEY,
-    width INTEGER NOT NULL CHECK (width >= 1 AND width <= 50000),
-    length INTEGER NOT NULL CHECK (length >= 1 AND length <= 50000),
-    tree_count INTEGER DEFAULT 0,
-    min_height INTEGER,
-    max_height INTEGER,
-    median_height INTEGER
+    uuid VARCHAR(36) UNIQUE,
+    width INT NOT NULL CHECK (width >= 1 AND width <= 50000),
+    length INT NOT NULL CHECK (length >= 1 AND length <= 50000),
+    tree_count SMALLINT DEFAULT 0,
+    min_tree_height SMALLINT,
+    max_tree_height SMALLINT,
+    median_tree_height SMALLINT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE trees (
+CREATE INDEX IF NOT EXISTS idx_estates_uuid ON estates(uuid);
+
+CREATE TABLE IF NOT EXISTS trees (
     id SERIAL PRIMARY KEY,
     estate_id INTEGER REFERENCES estates(id),
-    x INTEGER NOT NULL CHECK (x >= 1), -- Assuming x and y are coordinates, which cannot be negative
-    y INTEGER NOT NULL CHECK (y >= 1), -- Assuming x and y are coordinates, which cannot be negative
-    height INTEGER NOT NULL CHECK (height >= 1 AND height <= 30), -- Height in meters
+    x INT NOT NULL CHECK (x >= 1), -- Assuming x and y are coordinates, which cannot be negative
+    y INT NOT NULL CHECK (y >= 1), -- Assuming x and y are coordinates, which cannot be negative
+    height SMALLINT NOT NULL CHECK (height >= 1 AND height <= 30),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT unique_tree_location UNIQUE (estate_id, x, y), -- Ensure one tree per plot
     CONSTRAINT fk_estate_id FOREIGN KEY (estate_id) REFERENCES estates(id)
 );
 
--- Create index on estate_id for faster lookup of trees by estate
-CREATE INDEX idx_trees_estate_id ON trees(estate_id);
-
+CREATE INDEX IF NOT EXISTS idx_trees_estate_id ON trees(estate_id);

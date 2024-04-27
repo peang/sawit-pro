@@ -5,7 +5,8 @@ import (
 	"net/http"
 
 	"github.com/SawitProRecruitment/UserService/generated"
-	"github.com/google/uuid"
+	"github.com/SawitProRecruitment/UserService/models"
+	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 )
 
@@ -19,6 +20,21 @@ func (s *Server) GetHello(ctx echo.Context, params generated.GetHelloParams) err
 
 func (s *Server) PostEstate(ctx echo.Context) error {
 	var resp generated.EstateResponse
-	resp.Id = uuid.New()
+
+	body := new(EstateRequest)
+	if err := ctx.Bind(body); err != nil {
+		return ctx.String(http.StatusBadRequest, "bad request")
+	}
+
+	if err := validator.New().Struct(body); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	estate := models.NewEstate(body.Width, body.Length)
+
+	// Persisting estate model to database through repository
+	s.Repository.EstatePersist(ctx.Request().Context(), estate)
+
+	resp.Id = estate.UUID
 	return ctx.JSON(http.StatusOK, resp)
 }

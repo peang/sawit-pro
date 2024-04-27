@@ -5,10 +5,13 @@ import (
 	"database/sql"
 
 	_ "github.com/lib/pq"
+	"github.com/uptrace/bun"
+	"github.com/uptrace/bun/dialect/pgdialect"
+	"github.com/uptrace/bun/driver/pgdriver"
 )
 
 type Repository struct {
-	Db *sql.DB
+	Db *bun.DB
 }
 
 type NewRepositoryOptions struct {
@@ -16,10 +19,13 @@ type NewRepositoryOptions struct {
 }
 
 func NewRepository(opts NewRepositoryOptions) *Repository {
-	db, err := sql.Open("postgres", opts.Dsn)
-	if err != nil {
-		panic(err)
-	}
+	pgconn := pgdriver.NewConnector(
+		pgdriver.WithDSN(opts.Dsn),
+	)
+
+	sqldb := sql.OpenDB(pgconn)
+	db := bun.NewDB(sqldb, pgdialect.New())
+
 	return &Repository{
 		Db: db,
 	}

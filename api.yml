@@ -81,8 +81,8 @@ components:
     EstateRequest:
       type: object
       required:
-        - width
         - length
+        - width
       properties:
         width:
           type: integer
@@ -99,4 +99,3 @@ components:
       properties:
         id:
           type: string
-          format: uuid

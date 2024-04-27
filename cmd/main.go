@@ -1,8 +1,6 @@
 package main
 
 import (
-	"os"
-
 	"github.com/SawitProRecruitment/UserService/generated"
 	"github.com/SawitProRecruitment/UserService/handler"
 	"github.com/SawitProRecruitment/UserService/repository"
@@ -18,11 +16,14 @@ func main() {
 
 	generated.RegisterHandlers(e, server)
 	e.Use(middleware.Logger())
-	e.Logger.Fatal(e.Start(":1323"))
+	// e.Logger.Fatal(e.Start(":1323"))
+	e.Logger.Fatal(e.Start(":8080"))
 }
 
 func newServer() *handler.Server {
-	dbDsn := os.Getenv("DATABASE_URL")
+	// dbDsn := os.Getenv("DATABASE_URL")
+	dbDsn := "postgres://docker:docker@localhost/sawit?sslmode=disable"
+
 	var repo repository.RepositoryInterface = repository.NewRepository(repository.NewRepositoryOptions{
 		Dsn: dbDsn,
 	})
