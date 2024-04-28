@@ -59,6 +59,24 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /estate/{id}/stats:
+    get:
+      summary: Retrieve stats of trees in a given estate.
+      parameters:
+        - $ref: "#/components/parameters/EstateIDPathParam"
+      responses:
+        "200":
+          description: Stats of the trees in the estate.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EstateStatsResponse"
+        "404":
+          description: Estate not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   parameters:
     EstateIDPathParam:
@@ -125,3 +143,19 @@ components:
       properties:
         id:
           type: string
+    EstateStatsResponse:
+      type: object
+      required:
+        - count
+        - max
+        - min
+        - median
+      properties:
+        count:
+          type: integer
+        max:
+          type: integer
+        min:
+          type: integer
+        median:
+          type: integer

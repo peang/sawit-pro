@@ -26,7 +26,7 @@ func (s *Server) PostEstate(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "error saving data")
 	}
 
-	return ctx.JSON(http.StatusOK, generated.EstateResponse{
+	return ctx.JSON(http.StatusCreated, generated.EstateResponse{
 		Id: estate.UUID,
 	})
 }
@@ -76,7 +76,29 @@ func (s *Server) PostEstateIdTree(ctx echo.Context, id generated.EstateIDPathPar
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
-	return ctx.JSON(http.StatusOK, generated.EstateResponse{
+	return ctx.JSON(http.StatusCreated, generated.EstateResponse{
 		Id: newTree.UUID,
+	})
+}
+
+func (s *Server) GetEstateIdStats(ctx echo.Context, id generated.EstateIDPathParam) error {
+	context := ctx.Request().Context()
+
+	// Start Check if the estate exist
+	estate, err := s.Repository.GetEstate(context, id.String())
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	if estate == nil {
+		return echo.NewHTTPError(http.StatusNotFound, "estate not found")
+	}
+	// Done Check if the estate exist
+
+	return ctx.JSON(http.StatusOK, generated.EstateStatsResponse{
+		Count:  int(estate.TreeCount),
+		Max:    int(estate.MaxTreeHeight),
+		Min:    int(estate.MinTreeHeight),
+		Median: int(estate.MedianTreeHeight),
 	})
 }

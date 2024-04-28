@@ -45,7 +45,7 @@ func TestPostEstate(t *testing.T) {
 			t.Fatalf("failed to unmarshal response body: %v", err)
 		}
 
-		assert.Equal(t, http.StatusOK, rec.Code)
+		assert.Equal(t, http.StatusCreated, rec.Code)
 		assert.NotEmpty(t, responseBody.Id, "id should not be empty")
 	}
 }
@@ -144,7 +144,7 @@ func TestPostTree(t *testing.T) {
 			t.Fatalf("failed to unmarshal response body: %v", err)
 		}
 
-		assert.Equal(t, http.StatusOK, rec.Code)
+		assert.Equal(t, http.StatusCreated, rec.Code)
 		assert.NotEmpty(t, responseBody.Id, "id should not be empty")
 	}
 }
@@ -341,5 +341,116 @@ func TestPostTree_TreeErrorWhenCreate(t *testing.T) {
 		assert.Error(t, err)
 		assert.Equal(t, http.StatusInternalServerError, statusCode)
 		assert.Equal(t, "error", statusMessage)
+	}
+}
+
+func TestGetEstateStats_ErrorWhenGet(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := repository.NewMockRepositoryInterface(ctrl)
+
+	s := &Server{
+		Repository: mockRepo,
+	}
+
+	estateUuid := uuid.New()
+
+	req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/estate/%s/stats", estateUuid.String()), nil)
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+
+	rec := httptest.NewRecorder()
+	c := echo.New().NewContext(req, rec)
+
+	mockRepo.EXPECT().GetEstate(c.Request().Context(), gomock.Any()).Return(nil, errors.New("error"))
+
+	err := s.GetEstateIdStats(c, estateUuid)
+	if httpErr, ok := err.(*echo.HTTPError); ok {
+		statusCode := httpErr.Code
+		statusMessage := httpErr.Message
+
+		assert.Error(t, err)
+		assert.Equal(t, http.StatusInternalServerError, statusCode)
+		assert.Equal(t, "error", statusMessage)
+	}
+}
+
+func TestGetEstateStats_EstateNotFound(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := repository.NewMockRepositoryInterface(ctrl)
+
+	s := &Server{
+		Repository: mockRepo,
+	}
+
+	estateUuid := uuid.New()
+
+	req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/estate/%s/stats", estateUuid.String()), nil)
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+
+	rec := httptest.NewRecorder()
+	c := echo.New().NewContext(req, rec)
+
+	mockRepo.EXPECT().GetEstate(c.Request().Context(), gomock.Any()).Return(nil, nil)
+
+	err := s.GetEstateIdStats(c, estateUuid)
+	if httpErr, ok := err.(*echo.HTTPError); ok {
+		statusCode := httpErr.Code
+		statusMessage := httpErr.Message
+
+		assert.Error(t, err)
+		assert.Equal(t, http.StatusNotFound, statusCode)
+		assert.Equal(t, "estate not found", statusMessage)
+	}
+}
+
+func TestGetEstateStats(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	estateId := uint64(1)
+	estateUuid := uuid.New()
+	mockRepo := repository.NewMockRepositoryInterface(ctrl)
+	mockEstate := models.Estate{
+		ID:               estateId,
+		UUID:             estateUuid.String(),
+		Width:            10,
+		Length:           10,
+		TreeCount:        2,
+		MaxTreeHeight:    10,
+		MinTreeHeight:    1,
+		MedianTreeHeight: 5,
+	}
+
+	mockResponses := generated.EstateStatsResponse{
+		Count:  2,
+		Max:    10,
+		Min:    1,
+		Median: 5,
+	}
+
+	s := &Server{
+		Repository: mockRepo,
+	}
+
+	req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/estate/%s/stats", estateUuid.String()), nil)
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+
+	rec := httptest.NewRecorder()
+	c := echo.New().NewContext(req, rec)
+
+	mockRepo.EXPECT().GetEstate(c.Request().Context(), estateUuid.String()).Return(&mockEstate, nil)
+
+	if assert.NoError(t, s.GetEstateIdStats(c, estateUuid)) {
+		var responseBody generated.EstateStatsResponse
+		err := json.Unmarshal(rec.Body.Bytes(), &responseBody)
+		if err != nil {
+			t.Fatalf("failed to unmarshal response body: %v", err)
+		}
+
+		assert.Equal(t, http.StatusOK, rec.Code)
+		assert.Equal(t, mockResponses, responseBody)
 	}
 }
