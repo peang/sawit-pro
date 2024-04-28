@@ -102,3 +102,46 @@ func (s *Server) GetEstateIdStats(ctx echo.Context, id generated.EstateIDPathPar
 		Median: int(estate.MedianTreeHeight),
 	})
 }
+
+func (s *Server) GetEstateIdDronePlan(ctx echo.Context, id generated.EstateIDPathParam, params generated.GetEstateIdDronePlanParams) error {
+	context := ctx.Request().Context()
+
+	var request DronePlanRequest
+	err := ctx.Bind(&request)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	// Start Check if the estate exist
+	estate, err := s.Repository.GetEstate(context, id.String())
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	if estate == nil {
+		return echo.NewHTTPError(http.StatusNotFound, "estate not found")
+	}
+	// Done Check if the estate exist
+
+	trees, _ := s.Repository.GetTreesByEstate(context, estate.ID)
+
+	drone := models.NewDrone(estate, trees, request.MaxDistance)
+	drone.StartFlight()
+
+	if request.MaxDistance == nil {
+		return ctx.JSON(http.StatusOK, generated.DronePlanResponse{
+			Distance: int(drone.Travelled),
+		})
+	} else {
+		lastCoordinateX := int(drone.LastCoordinateX)
+		lastCoordinateY := int(drone.LastCoordinateY)
+
+		return ctx.JSON(http.StatusOK, generated.DronePlanResponse{
+			Distance: int(drone.Travelled),
+			Rest: &generated.DroneRestResponse{
+				X: &lastCoordinateX,
+				Y: &lastCoordinateY,
+			},
+		})
+	}
+}

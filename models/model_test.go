@@ -64,7 +64,7 @@ func TestCalculateEstateTreeStats(t *testing.T) {
 
 	tree := &Tree{
 		UUID:   "mockUUID",
-		Estate: *mockEstate,
+		Estate: mockEstate,
 		Height: 20,
 	}
 
@@ -90,7 +90,7 @@ func TestCalculateEstateTreeStats_OutsideBoundaries(t *testing.T) {
 
 	tree := &Tree{
 		UUID:   "mockUUID",
-		Estate: *mockEstate,
+		Estate: mockEstate,
 		X:      10,
 		Y:      10,
 		Height: 20,

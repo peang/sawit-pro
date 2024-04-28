@@ -18,4 +18,6 @@ type RepositoryInterface interface {
 	SaveTree(ctx context.Context, tree *models.Tree) error
 
 	GetTreeByCoordinate(ctx context.Context, estateId uint64, x uint16, y uint16) (*models.Tree, error)
+
+	GetTreesByEstate(ctx context.Context, estateId uint64) (*[]models.Tree, error)
 }

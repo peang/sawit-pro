@@ -70,6 +70,21 @@ func (mr *MockRepositoryInterfaceMockRecorder) GetTreeByCoordinate(ctx, estateId
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTreeByCoordinate", reflect.TypeOf((*MockRepositoryInterface)(nil).GetTreeByCoordinate), ctx, estateId, x, y)
 }
 
+// GetTreesByEstate mocks base method.
+func (m *MockRepositoryInterface) GetTreesByEstate(ctx context.Context, estateId uint64) (*[]models.Tree, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTreesByEstate", ctx, estateId)
+	ret0, _ := ret[0].(*[]models.Tree)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTreesByEstate indicates an expected call of GetTreesByEstate.
+func (mr *MockRepositoryInterfaceMockRecorder) GetTreesByEstate(ctx, estateId any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTreesByEstate", reflect.TypeOf((*MockRepositoryInterface)(nil).GetTreesByEstate), ctx, estateId)
+}
+
 // SaveEstate mocks base method.
 func (m *MockRepositoryInterface) SaveEstate(ctx context.Context, estate *models.Estate) error {
 	m.ctrl.T.Helper()

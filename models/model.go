@@ -20,7 +20,7 @@ type Tree struct {
 	CreatedAt time.Time `bun:"created_at"`
 	UpdatedAt time.Time `bun:"updated_at"`
 
-	Estate Estate `bun:"rel:belongs-to"`
+	Estate *Estate `bun:"rel:belongs-to"`
 }
 
 type Estate struct {
@@ -40,20 +40,24 @@ type Estate struct {
 
 func NewEstate(width uint16, length uint16) *Estate {
 	return &Estate{
-		UUID:   uuid.NewString(),
-		Width:  width,
-		Length: length,
+		UUID:      uuid.NewString(),
+		Width:     width,
+		Length:    length,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
 	}
 }
 
 func NewTree(estate *Estate, x uint16, y uint16, height uint8) (*Tree, error) {
 	tree := Tree{
-		UUID:     uuid.NewString(),
-		EstateID: estate.ID,
-		Estate:   *estate,
-		X:        x,
-		Y:        y,
-		Height:   height,
+		UUID:      uuid.NewString(),
+		EstateID:  estate.ID,
+		Estate:    estate,
+		X:         x,
+		Y:         y,
+		Height:    height,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
 	}
 
 	err := tree.CalculateEstateTreeStats()
@@ -65,12 +69,12 @@ func NewTree(estate *Estate, x uint16, y uint16, height uint8) (*Tree, error) {
 }
 
 func (t *Tree) CalculateEstateTreeStats() (err error) {
-	if t.X > t.Estate.Width {
+	if t.X > t.Estate.Length {
 		err = errors.New("outside of boundaries")
 		return
 	}
 
-	if t.Y > t.Estate.Length {
+	if t.Y > t.Estate.Width {
 		err = errors.New("outside of boundaries")
 		return
 	}
@@ -100,6 +104,8 @@ func (t *Tree) CalculateEstateTreeStats() (err error) {
 	t.Estate.TreeCount++
 
 	t.Estate.MedianTreeHeight = uint8(median)
+
+	t.Estate.UpdatedAt = time.Now()
 
 	return
 }

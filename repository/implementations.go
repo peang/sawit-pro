@@ -54,8 +54,7 @@ func (r *Repository) SaveTree(ctx context.Context, tree *models.Tree) error {
 		return err
 	}
 
-	estate := tree.Estate
-	_, err = r.Db.NewUpdate().Model(&estate).Where("id = ?", estate.ID).Exec(ctx)
+	_, err = r.Db.NewUpdate().Model(tree.Estate).Where("id = ?", tree.Estate.ID).Exec(ctx)
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -82,4 +81,22 @@ func (r *Repository) GetTreeByCoordinate(ctx context.Context, estateId uint64, x
 	}
 
 	return &tree, nil
+}
+
+func (r *Repository) GetTreesByEstate(ctx context.Context, estateId uint64) (*[]models.Tree, error) {
+	var trees []models.Tree
+
+	err := r.Db.NewSelect().Model(&trees).
+		Column("uuid", "x", "y", "height").
+		Where("estate_id = ?", estateId).
+		Scan(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(trees) == 0 {
+		return &[]models.Tree{}, nil
+	}
+
+	return &trees, nil
 }

@@ -10,3 +10,7 @@ type TreeRequest struct {
 	X      int `json:"x" validate:"required,min=1,max=50000"`
 	Y      int `json:"y" validate:"required,min=1,max=50000"`
 }
+
+type DronePlanRequest struct {
+	MaxDistance *uint16 `query:"max_distance"`
+}
