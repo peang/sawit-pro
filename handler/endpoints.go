@@ -105,11 +105,10 @@ func (s *Server) GetEstateIdStats(ctx echo.Context, id generated.EstateIDPathPar
 
 func (s *Server) GetEstateIdDronePlan(ctx echo.Context, id generated.EstateIDPathParam, params generated.GetEstateIdDronePlanParams) error {
 	context := ctx.Request().Context()
-
-	var request DronePlanRequest
-	err := ctx.Bind(&request)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	var maxDistance *uint16
+	if params.MaxDistance != nil {
+		maxDistanceRaw := uint16(*params.MaxDistance)
+		maxDistance = &maxDistanceRaw
 	}
 
 	// Start Check if the estate exist
@@ -123,12 +122,15 @@ func (s *Server) GetEstateIdDronePlan(ctx echo.Context, id generated.EstateIDPat
 	}
 	// Done Check if the estate exist
 
-	trees, _ := s.Repository.GetTreesByEstate(context, estate.ID)
+	trees, err := s.Repository.GetTreesByEstate(context, estate.ID)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
 
-	drone := models.NewDrone(estate, trees, request.MaxDistance)
+	drone := models.NewDrone(estate, trees, maxDistance)
 	drone.StartFlight()
 
-	if request.MaxDistance == nil {
+	if maxDistance == nil {
 		return ctx.JSON(http.StatusOK, generated.DronePlanResponse{
 			Distance: int(drone.Travelled),
 		})

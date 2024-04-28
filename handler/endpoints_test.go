@@ -454,3 +454,230 @@ func TestGetEstateStats(t *testing.T) {
 		assert.Equal(t, mockResponses, responseBody)
 	}
 }
+
+func TestGetDronePlan_ErrorGet(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	estateUuid := uuid.New()
+	mockRepo := repository.NewMockRepositoryInterface(ctrl)
+
+	s := &Server{
+		Repository: mockRepo,
+	}
+
+	req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/estate/%s/drone-plan", estateUuid.String()), nil)
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+
+	rec := httptest.NewRecorder()
+	c := echo.New().NewContext(req, rec)
+
+	mockRepo.EXPECT().GetEstate(c.Request().Context(), estateUuid.String()).Return(nil, errors.New("error"))
+
+	err := s.GetEstateIdDronePlan(c, estateUuid, generated.GetEstateIdDronePlanParams{})
+	if httpErr, ok := err.(*echo.HTTPError); ok {
+		statusCode := httpErr.Code
+		statusMessage := httpErr.Message
+
+		assert.Error(t, err)
+		assert.Equal(t, http.StatusInternalServerError, statusCode)
+		assert.Equal(t, "error", statusMessage)
+	}
+}
+
+func TestGetDronePlan_ErrorEstateNotFound(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	estateUuid := uuid.New()
+	mockRepo := repository.NewMockRepositoryInterface(ctrl)
+
+	s := &Server{
+		Repository: mockRepo,
+	}
+
+	req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/estate/%s/drone-plan", estateUuid.String()), nil)
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+
+	rec := httptest.NewRecorder()
+	c := echo.New().NewContext(req, rec)
+
+	mockRepo.EXPECT().GetEstate(c.Request().Context(), estateUuid.String()).Return(nil, nil)
+
+	err := s.GetEstateIdDronePlan(c, estateUuid, generated.GetEstateIdDronePlanParams{})
+	if httpErr, ok := err.(*echo.HTTPError); ok {
+		statusCode := httpErr.Code
+		statusMessage := httpErr.Message
+
+		assert.Error(t, err)
+		assert.Equal(t, http.StatusNotFound, statusCode)
+		assert.Equal(t, "estate not found", statusMessage)
+	}
+}
+
+func TestGetDronePlan_ErrorGetTreesError(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	estateId := uint64(1)
+	estateUuid := uuid.New()
+	mockRepo := repository.NewMockRepositoryInterface(ctrl)
+	mockEstate := models.Estate{
+		ID:               estateId,
+		UUID:             estateUuid.String(),
+		Width:            10,
+		Length:           10,
+		TreeCount:        2,
+		MaxTreeHeight:    10,
+		MinTreeHeight:    1,
+		MedianTreeHeight: 5,
+	}
+
+	s := &Server{
+		Repository: mockRepo,
+	}
+
+	req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/estate/%s/drone-plan", estateUuid.String()), nil)
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+
+	rec := httptest.NewRecorder()
+	c := echo.New().NewContext(req, rec)
+
+	mockRepo.EXPECT().GetEstate(c.Request().Context(), estateUuid.String()).Return(&mockEstate, nil)
+	mockRepo.EXPECT().GetTreesByEstate(c.Request().Context(), estateId).Return(nil, errors.New("error"))
+
+	err := s.GetEstateIdDronePlan(c, estateUuid, generated.GetEstateIdDronePlanParams{})
+	if httpErr, ok := err.(*echo.HTTPError); ok {
+		statusCode := httpErr.Code
+		statusMessage := httpErr.Message
+
+		assert.Error(t, err)
+		assert.Equal(t, http.StatusInternalServerError, statusCode)
+		assert.Equal(t, "error", statusMessage)
+	}
+}
+
+func TestGetDronePlan_WithoutMaxDistance(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	estateId := uint64(1)
+	estateUuid := uuid.New()
+	mockRepo := repository.NewMockRepositoryInterface(ctrl)
+	mockEstate := models.Estate{
+		ID:               estateId,
+		UUID:             estateUuid.String(),
+		Width:            3,
+		Length:           3,
+		TreeCount:        1,
+		MaxTreeHeight:    10,
+		MinTreeHeight:    10,
+		MedianTreeHeight: 10,
+	}
+
+	s := &Server{
+		Repository: mockRepo,
+	}
+
+	mockTreesResponse := []models.Tree{
+		{
+			ID:       1,
+			EstateID: mockEstate.ID,
+			UUID:     uuid.NewString(),
+			X:        1,
+			Y:        1,
+			Height:   10,
+		},
+	}
+
+	mockResponses := generated.DronePlanResponse{
+		Distance: 102,
+	}
+
+	req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/estate/%s/drone-plan", estateUuid.String()), nil)
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+
+	rec := httptest.NewRecorder()
+	c := echo.New().NewContext(req, rec)
+
+	mockRepo.EXPECT().GetEstate(c.Request().Context(), estateUuid.String()).Return(&mockEstate, nil)
+	mockRepo.EXPECT().GetTreesByEstate(c.Request().Context(), estateId).Return(&mockTreesResponse, nil)
+
+	if assert.NoError(t, s.GetEstateIdDronePlan(c, estateUuid, generated.GetEstateIdDronePlanParams{})) {
+		var responseBody generated.DronePlanResponse
+		err := json.Unmarshal(rec.Body.Bytes(), &responseBody)
+		if err != nil {
+			t.Fatalf("failed to unmarshal response body: %v", err)
+		}
+
+		assert.Equal(t, http.StatusOK, rec.Code)
+		assert.Equal(t, mockResponses, responseBody)
+	}
+}
+
+func TestGetDronePlan_WithMaxDistance(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	estateId := uint64(1)
+	estateUuid := uuid.New()
+	mockRepo := repository.NewMockRepositoryInterface(ctrl)
+	mockEstate := models.Estate{
+		ID:               estateId,
+		UUID:             estateUuid.String(),
+		Width:            3,
+		Length:           3,
+		TreeCount:        1,
+		MaxTreeHeight:    10,
+		MinTreeHeight:    10,
+		MedianTreeHeight: 10,
+	}
+
+	s := &Server{
+		Repository: mockRepo,
+	}
+
+	mockTreesResponse := []models.Tree{
+		{
+			ID:       1,
+			EstateID: mockEstate.ID,
+			UUID:     uuid.NewString(),
+			X:        1,
+			Y:        1,
+			Height:   10,
+		},
+	}
+
+	x := int(1)
+	y := int(1)
+	mockResponses := generated.DronePlanResponse{
+		Distance: 10,
+		Rest: &generated.DroneRestResponse{
+			X: &x,
+			Y: &y,
+		},
+	}
+
+	req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/estate/%s/drone-plan", estateUuid.String()), nil)
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+
+	rec := httptest.NewRecorder()
+	c := echo.New().NewContext(req, rec)
+
+	mockRepo.EXPECT().GetEstate(c.Request().Context(), estateUuid.String()).Return(&mockEstate, nil)
+	mockRepo.EXPECT().GetTreesByEstate(c.Request().Context(), estateId).Return(&mockTreesResponse, nil)
+
+	maxDistance := int16(10)
+	if assert.NoError(t, s.GetEstateIdDronePlan(c, estateUuid, generated.GetEstateIdDronePlanParams{
+		MaxDistance: &maxDistance,
+	})) {
+		var responseBody generated.DronePlanResponse
+		err := json.Unmarshal(rec.Body.Bytes(), &responseBody)
+		if err != nil {
+			t.Fatalf("failed to unmarshal response body: %v", err)
+		}
+
+		assert.Equal(t, http.StatusOK, rec.Code)
+		assert.Equal(t, mockResponses, responseBody)
+	}
+}
