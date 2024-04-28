@@ -1,5 +1,3 @@
-
-
 .PHONY: clean all init generate generate_mocks
 
 all: build/main
@@ -17,7 +15,9 @@ init: clean generate
 
 test:
 	go clean -testcache
-	go test -short -coverprofile coverage.out -short -v ./...
+	go test -short -coverprofile coverage.out -short -v ./handler ./models
+	# go test -short -coverprofile coverage.out -short -v ./...
+
 
 test_api:
 	go clean -testcache

@@ -27,6 +27,7 @@ func newServer() *handler.Server {
 	var repo repository.RepositoryInterface = repository.NewRepository(repository.NewRepositoryOptions{
 		Dsn: dbDsn,
 	})
+
 	opts := handler.NewServerOptions{
 		Repository: repo,
 	}

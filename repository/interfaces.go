@@ -11,7 +11,5 @@ import (
 )
 
 type RepositoryInterface interface {
-	GetTestById(ctx context.Context, input GetTestByIdInput) (output GetTestByIdOutput, err error)
-
 	EstatePersist(ctx context.Context, estate *models.Estate) (*models.Estate, error)
 }
