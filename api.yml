@@ -1,13 +1,3 @@
-# This is the OpenAPI specification for your service. It is used to generate the client code.
-# To generate the server code, use the Gradle task `openApiGenerate`. The
-# generated code will be placed in `build/generate-resources/main`.
-#
-# We will evaluate you based on how well you design your API.
-# 1. How well it follows REST principles.
-# 2. How easy it is to understand and use.
-#
-# References
-# 1. https://swagger.io/specification/
 openapi: "3.0.0"
 info:
   version: 1.0.0
@@ -39,7 +29,47 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+  /estate/{id}/tree:
+    post:
+      summary: Store tree data in a given estate
+      parameters:
+        - $ref: "#/components/parameters/EstateIDPathParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TreeRequest"
+      responses:
+        "201":
+          description: Successful add tree to estate.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TreeResponse"
+        "400":
+          description: Invalid value or format received.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: State not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
+  parameters:
+    EstateIDPathParam:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: ID of the estate where the tree will be stored
+
   schemas:
     ErrorResponse:
       type: object
@@ -63,6 +93,32 @@ components:
           minimum: 1
           maximum: 50000
     EstateResponse:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+    TreeRequest:
+      type: object
+      required:
+        - x
+        - y
+        - height
+      properties:
+        x:
+          type: integer
+          minimum: 1
+          maximum: 50000
+        y:
+          type: integer
+          minimum: 1
+          maximum: 50000
+        height:
+          type: integer
+          minimum: 1
+          maximum: 30
+    TreeResponse:
       type: object
       required:
         - id

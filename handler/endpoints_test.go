@@ -2,14 +2,13 @@ package handler
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 
-	"github.com/SawitProRecruitment/UserService/models"
+	"github.com/SawitProRecruitment/UserService/generated"
 	"github.com/SawitProRecruitment/UserService/repository"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
@@ -21,7 +20,6 @@ func TestPostEstate(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockRepo := repository.NewMockRepositoryInterface(ctrl)
-	mockEstate := models.NewEstate(10, 10)
 
 	s := &Server{
 		Repository: mockRepo,
@@ -35,11 +33,17 @@ func TestPostEstate(t *testing.T) {
 	rec := httptest.NewRecorder()
 	c := echo.New().NewContext(req, rec)
 
-	mockRepo.EXPECT().EstatePersist(c.Request().Context(), gomock.Any()).Return(mockEstate, nil)
+	mockRepo.EXPECT().SaveEstate(c.Request().Context(), gomock.Any()).Return(nil)
 
 	if assert.NoError(t, s.PostEstate(c)) {
+		var responseBody generated.EstateResponse
+		err := json.Unmarshal(rec.Body.Bytes(), &responseBody)
+		if err != nil {
+			t.Fatalf("failed to unmarshal response body: %v", err)
+		}
+
 		assert.Equal(t, http.StatusOK, rec.Code)
-		assert.Equal(t, fmt.Sprintf(`{"id":"%s"}`, mockEstate.UUID), strings.TrimSpace(rec.Body.String()))
+		assert.NotEmpty(t, responseBody.Id, "id should not be empty")
 	}
 }
 
@@ -88,7 +92,7 @@ func TestPostEstate_ErrorPersisting(t *testing.T) {
 	rec := httptest.NewRecorder()
 	c := echo.New().NewContext(req, rec)
 
-	mockRepo.EXPECT().EstatePersist(c.Request().Context(), gomock.Any()).Return(nil, errors.New("error"))
+	mockRepo.EXPECT().SaveEstate(c.Request().Context(), gomock.Any()).Return(errors.New("error"))
 
 	err := s.PostEstate(c)
 	if httpErr, ok := err.(*echo.HTTPError); ok {

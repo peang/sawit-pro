@@ -40,17 +40,60 @@ func (m *MockRepositoryInterface) EXPECT() *MockRepositoryInterfaceMockRecorder 
 	return m.recorder
 }
 
-// EstatePersist mocks base method.
-func (m *MockRepositoryInterface) EstatePersist(ctx context.Context, estate *models.Estate) (*models.Estate, error) {
+// GetEstate mocks base method.
+func (m *MockRepositoryInterface) GetEstate(ctx context.Context, uuid string) (*models.Estate, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EstatePersist", ctx, estate)
+	ret := m.ctrl.Call(m, "GetEstate", ctx, uuid)
 	ret0, _ := ret[0].(*models.Estate)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// EstatePersist indicates an expected call of EstatePersist.
-func (mr *MockRepositoryInterfaceMockRecorder) EstatePersist(ctx, estate any) *gomock.Call {
+// GetEstate indicates an expected call of GetEstate.
+func (mr *MockRepositoryInterfaceMockRecorder) GetEstate(ctx, uuid any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EstatePersist", reflect.TypeOf((*MockRepositoryInterface)(nil).EstatePersist), ctx, estate)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEstate", reflect.TypeOf((*MockRepositoryInterface)(nil).GetEstate), ctx, uuid)
+}
+
+// GetTreeByCoordinate mocks base method.
+func (m *MockRepositoryInterface) GetTreeByCoordinate(ctx context.Context, estateId uint64, x, y uint16) (*models.Tree, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTreeByCoordinate", ctx, estateId, x, y)
+	ret0, _ := ret[0].(*models.Tree)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTreeByCoordinate indicates an expected call of GetTreeByCoordinate.
+func (mr *MockRepositoryInterfaceMockRecorder) GetTreeByCoordinate(ctx, estateId, x, y any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTreeByCoordinate", reflect.TypeOf((*MockRepositoryInterface)(nil).GetTreeByCoordinate), ctx, estateId, x, y)
+}
+
+// SaveEstate mocks base method.
+func (m *MockRepositoryInterface) SaveEstate(ctx context.Context, estate *models.Estate) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SaveEstate", ctx, estate)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SaveEstate indicates an expected call of SaveEstate.
+func (mr *MockRepositoryInterfaceMockRecorder) SaveEstate(ctx, estate any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveEstate", reflect.TypeOf((*MockRepositoryInterface)(nil).SaveEstate), ctx, estate)
+}
+
+// SaveTree mocks base method.
+func (m *MockRepositoryInterface) SaveTree(ctx context.Context, tree *models.Tree) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SaveTree", ctx, tree)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SaveTree indicates an expected call of SaveTree.
+func (mr *MockRepositoryInterfaceMockRecorder) SaveTree(ctx, tree any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveTree", reflect.TypeOf((*MockRepositoryInterface)(nil).SaveTree), ctx, tree)
 }

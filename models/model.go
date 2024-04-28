@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
@@ -11,12 +12,15 @@ type Tree struct {
 	bun.BaseModel `bun:"table:trees"`
 
 	ID        uint64    `bun:"id,pk"`
-	Estate    Estate    `bun:"rel:belongs-to"`
+	EstateID  uint64    `bun:"estate_id,notnull"`
+	UUID      string    `bun:"uuid,notnull"`
 	X         uint16    `bun:"x,notnull"`
 	Y         uint16    `bun:"y,notnull"`
 	Height    uint8     `bun:"height,notnull"`
 	CreatedAt time.Time `bun:"created_at"`
 	UpdatedAt time.Time `bun:"updated_at"`
+
+	Estate Estate `bun:"rel:belongs-to"`
 }
 
 type Estate struct {
@@ -40,4 +44,62 @@ func NewEstate(width uint16, length uint16) *Estate {
 		Width:  width,
 		Length: length,
 	}
+}
+
+func NewTree(estate *Estate, x uint16, y uint16, height uint8) (*Tree, error) {
+	tree := Tree{
+		UUID:     uuid.NewString(),
+		EstateID: estate.ID,
+		Estate:   *estate,
+		X:        x,
+		Y:        y,
+		Height:   height,
+	}
+
+	err := tree.CalculateEstateTreeStats()
+	if err != nil {
+		return nil, err
+	}
+
+	return &tree, nil
+}
+
+func (t *Tree) CalculateEstateTreeStats() (err error) {
+	if t.X > t.Estate.Width {
+		err = errors.New("outside of boundaries")
+		return
+	}
+
+	if t.Y > t.Estate.Length {
+		err = errors.New("outside of boundaries")
+		return
+	}
+
+	if t.Estate.MinTreeHeight != 0 {
+		if t.Height < t.Estate.MinTreeHeight {
+			t.Estate.MinTreeHeight = t.Height
+		}
+	} else {
+		t.Estate.MinTreeHeight = t.Height
+	}
+
+	if t.Estate.MaxTreeHeight != 0 {
+		if t.Height > t.Estate.MaxTreeHeight {
+			t.Estate.MaxTreeHeight = t.Height
+		}
+	} else {
+		t.Estate.MaxTreeHeight = t.Height
+	}
+
+	var median uint8
+	if t.Estate.TreeCount != 0 {
+		median = (t.Estate.MedianTreeHeight + t.Height) / 2
+	} else {
+		median = t.Height
+	}
+	t.Estate.TreeCount++
+
+	t.Estate.MedianTreeHeight = uint8(median)
+
+	return
 }

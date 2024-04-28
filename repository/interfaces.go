@@ -11,5 +11,11 @@ import (
 )
 
 type RepositoryInterface interface {
-	EstatePersist(ctx context.Context, estate *models.Estate) (*models.Estate, error)
+	SaveEstate(ctx context.Context, estate *models.Estate) error
+
+	GetEstate(ctx context.Context, uuid string) (*models.Estate, error)
+
+	SaveTree(ctx context.Context, tree *models.Tree) error
+
+	GetTreeByCoordinate(ctx context.Context, estateId uint64, x uint16, y uint16) (*models.Tree, error)
 }

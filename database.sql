@@ -22,6 +22,7 @@ CREATE INDEX IF NOT EXISTS idx_estates_uuid ON estates(uuid);
 
 CREATE TABLE IF NOT EXISTS trees (
     id SERIAL PRIMARY KEY,
+	uuid VARCHAR(36) UNIQUE,
     estate_id INTEGER REFERENCES estates(id),
     x INT NOT NULL CHECK (x >= 1), -- Assuming x and y are coordinates, which cannot be negative
     y INT NOT NULL CHECK (y >= 1), -- Assuming x and y are coordinates, which cannot be negative
@@ -32,4 +33,7 @@ CREATE TABLE IF NOT EXISTS trees (
     CONSTRAINT fk_estate_id FOREIGN KEY (estate_id) REFERENCES estates(id)
 );
 
+CREATE INDEX IF NOT EXISTS idx_trees_uuid ON trees(uuid);
+CREATE INDEX IF NOT EXISTS idx_trees_x ON trees(x);
+CREATE INDEX IF NOT EXISTS idx_trees_y ON trees(y);
 CREATE INDEX IF NOT EXISTS idx_trees_estate_id ON trees(estate_id);
