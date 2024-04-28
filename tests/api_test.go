@@ -77,7 +77,7 @@ func getTestCases() []TestCase {
 						return http.NewRequest("POST", ApiUrl+"/estate", bytes.NewReader(body))
 					},
 					Expect: func(t *testing.T, ctx context.Context, tc *TestCase, resp *http.Response, data map[string]any) {
-						require.Equal(t, http.StatusOK, resp.StatusCode)
+						require.Equal(t, http.StatusCreated, resp.StatusCode)
 						RequireIsUUID(t, data["id"].(string))
 					},
 				},
@@ -97,7 +97,7 @@ func getTestCases() []TestCase {
 						return http.NewRequest("POST", ApiUrl+"/estate", bytes.NewReader(body))
 					},
 					Expect: func(t *testing.T, ctx context.Context, tc *TestCase, resp *http.Response, data map[string]any) {
-						require.Equal(t, http.StatusOK, resp.StatusCode)
+						require.Equal(t, http.StatusCreated, resp.StatusCode)
 						fmt.Println("Data:", data)
 						RequireIsUUID(t, data["id"].(string))
 					},
@@ -115,7 +115,7 @@ func getTestCases() []TestCase {
 						return http.NewRequest("POST", ApiUrl+"/estate/"+id+"/tree", bytes.NewReader(body))
 					},
 					Expect: func(t *testing.T, ctx context.Context, tc *TestCase, resp *http.Response, data map[string]any) {
-						require.Equal(t, http.StatusOK, resp.StatusCode)
+						require.Equal(t, http.StatusCreated, resp.StatusCode)
 						RequireIsUUID(t, data["id"].(string))
 					},
 				},
@@ -132,7 +132,7 @@ func getTestCases() []TestCase {
 						return http.NewRequest("POST", ApiUrl+"/estate/"+id+"/tree", bytes.NewReader(body))
 					},
 					Expect: func(t *testing.T, ctx context.Context, tc *TestCase, resp *http.Response, data map[string]any) {
-						require.Equal(t, http.StatusOK, resp.StatusCode)
+						require.Equal(t, http.StatusCreated, resp.StatusCode)
 						RequireIsUUID(t, data["id"].(string))
 					},
 				},
@@ -152,7 +152,7 @@ func getTestCases() []TestCase {
 						return http.NewRequest("POST", ApiUrl+"/estate", bytes.NewReader(body))
 					},
 					Expect: func(t *testing.T, ctx context.Context, tc *TestCase, resp *http.Response, data map[string]any) {
-						require.Equal(t, http.StatusOK, resp.StatusCode)
+						require.Equal(t, http.StatusCreated, resp.StatusCode)
 						RequireIsUUID(t, data["id"].(string))
 					},
 				},
@@ -169,7 +169,7 @@ func getTestCases() []TestCase {
 						return http.NewRequest("POST", ApiUrl+"/estate/"+id+"/tree", bytes.NewReader(body))
 					},
 					Expect: func(t *testing.T, ctx context.Context, tc *TestCase, resp *http.Response, data map[string]any) {
-						require.Equal(t, http.StatusOK, resp.StatusCode)
+						require.Equal(t, http.StatusCreated, resp.StatusCode)
 						RequireIsUUID(t, data["id"].(string))
 					},
 				},
@@ -186,7 +186,7 @@ func getTestCases() []TestCase {
 						return http.NewRequest("POST", ApiUrl+"/estate/"+id+"/tree", bytes.NewReader(body))
 					},
 					Expect: func(t *testing.T, ctx context.Context, tc *TestCase, resp *http.Response, data map[string]any) {
-						require.Equal(t, http.StatusOK, resp.StatusCode)
+						require.Equal(t, http.StatusCreated, resp.StatusCode)
 						RequireIsUUID(t, data["id"].(string))
 					},
 				},
@@ -203,7 +203,7 @@ func getTestCases() []TestCase {
 						return http.NewRequest("POST", ApiUrl+"/estate/"+id+"/tree", bytes.NewReader(body))
 					},
 					Expect: func(t *testing.T, ctx context.Context, tc *TestCase, resp *http.Response, data map[string]any) {
-						require.Equal(t, http.StatusOK, resp.StatusCode)
+						require.Equal(t, http.StatusCreated, resp.StatusCode)
 						RequireIsUUID(t, data["id"].(string))
 					},
 				},
