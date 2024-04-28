@@ -44,7 +44,7 @@ func (d *Drone) TestFlight() {
 	fmt.Print("Drone Start Flight At Plot 1,1 \n")
 
 	xValue := uint16(1)
-	for y := range d.Estate.Width + 1 {
+	for y := uint16(1); y <= d.Estate.Width; y++ {
 		if xValue == uint16(1) {
 			for x := xValue; x <= uint16(d.Estate.Length); x++ {
 				fmt.Println(x, y)
@@ -66,8 +66,8 @@ func (d *Drone) StartFlight() {
 	}
 
 	xValue := uint16(1)
-	for y := range d.Estate.Width {
-		y += 1
+	for y := uint16(1); y <= d.Estate.Width; y++ {
+		// y += 1
 		if d.BatteryDrains {
 			break
 		}
