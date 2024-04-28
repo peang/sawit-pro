@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/SawitProRecruitment/UserService/generated"
@@ -57,7 +56,6 @@ func (s *Server) PostEstateIdTree(ctx echo.Context, id generated.EstateIDPathPar
 	// Start Check if the tree with the same coordinate already exists
 	oldTree, err := s.Repository.GetTreeByCoordinate(context, estate.ID, uint16(body.X), uint16(body.Y))
 	if err != nil {
-		fmt.Println(err)
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
@@ -75,7 +73,7 @@ func (s *Server) PostEstateIdTree(ctx echo.Context, id generated.EstateIDPathPar
 	// Save New Tree Entity
 	err = s.Repository.SaveTree(context, newTree)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
 	return ctx.JSON(http.StatusOK, generated.EstateResponse{
