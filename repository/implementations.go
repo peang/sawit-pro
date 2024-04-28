@@ -89,6 +89,7 @@ func (r *Repository) GetTreesByEstate(ctx context.Context, estateId uint64) (*[]
 	err := r.Db.NewSelect().Model(&trees).
 		Column("uuid", "x", "y", "height").
 		Where("estate_id = ?", estateId).
+		Order("height asc").
 		Scan(ctx)
 	if err != nil {
 		return nil, err

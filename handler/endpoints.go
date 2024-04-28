@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"sort"
 
 	"github.com/SawitProRecruitment/UserService/generated"
 	"github.com/SawitProRecruitment/UserService/models"
@@ -64,11 +65,27 @@ func (s *Server) PostEstateIdTree(ctx echo.Context, id generated.EstateIDPathPar
 	}
 	// Done Check if the tree with the same coordinate already exists
 
+	// Get Existing trees to calculate median
+	trees, err := s.Repository.GetTreesByEstate(context, estate.ID)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
 	// Create New Tree Entity
 	newTree, err := models.NewTree(estate, uint16(body.X), uint16(body.Y), uint8(body.Height))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
+
+	treeValues := *trees
+	treeValues = append(treeValues, *newTree)
+
+	sort.Slice(treeValues, func(i, j int) bool {
+		return treeValues[i].Height < treeValues[j].Height
+	})
+
+	estate.CalculateEstateTreeMedian(&treeValues)
+	newTree.Estate = estate
 
 	// Save New Tree Entity
 	err = s.Repository.SaveTree(context, newTree)

@@ -120,6 +120,16 @@ func TestPostTree(t *testing.T) {
 		Width:  10,
 		Length: 10,
 	}
+	mockTreesResponse := []models.Tree{
+		{
+			ID:       1,
+			EstateID: mockEstate.ID,
+			UUID:     uuid.NewString(),
+			X:        1,
+			Y:        1,
+			Height:   10,
+		},
+	}
 
 	s := &Server{
 		Repository: mockRepo,
@@ -136,6 +146,7 @@ func TestPostTree(t *testing.T) {
 	mockRepo.EXPECT().GetEstate(c.Request().Context(), estateUuid.String()).Return(&mockEstate, nil)
 	mockRepo.EXPECT().GetTreeByCoordinate(c.Request().Context(), estateId, uint16(1), uint16(1)).Return(nil, nil)
 	mockRepo.EXPECT().SaveTree(c.Request().Context(), gomock.Any())
+	mockRepo.EXPECT().GetTreesByEstate(c.Request().Context(), estateId).Return(&mockTreesResponse, nil)
 
 	if assert.NoError(t, s.PostEstateIdTree(c, estateUuid)) {
 		var responseBody generated.TreeResponse
@@ -317,6 +328,17 @@ func TestPostTree_TreeErrorWhenCreate(t *testing.T) {
 		Width:  10,
 		Length: 10,
 	}
+	mockTreesResponse := []models.Tree{
+		{
+			ID:       1,
+			EstateID: mockEstate.ID,
+			UUID:     uuid.NewString(),
+			X:        1,
+			Y:        1,
+			Height:   10,
+		},
+	}
+
 	s := &Server{
 		Repository: mockRepo,
 	}
@@ -332,6 +354,7 @@ func TestPostTree_TreeErrorWhenCreate(t *testing.T) {
 	mockRepo.EXPECT().GetEstate(c.Request().Context(), estateUuid.String()).Return(&mockEstate, nil)
 	mockRepo.EXPECT().GetTreeByCoordinate(c.Request().Context(), estateId, uint16(1), uint16(1)).Return(nil, nil)
 	mockRepo.EXPECT().SaveTree(c.Request().Context(), gomock.Any()).Return(errors.New("error"))
+	mockRepo.EXPECT().GetTreesByEstate(c.Request().Context(), estateId).Return(&mockTreesResponse, nil)
 
 	err := s.PostEstateIdTree(c, estateUuid)
 	if httpErr, ok := err.(*echo.HTTPError); ok {

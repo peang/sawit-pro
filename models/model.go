@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -68,6 +69,25 @@ func NewTree(estate *Estate, x uint16, y uint16, height uint8) (*Tree, error) {
 	return &tree, nil
 }
 
+func (e *Estate) CalculateEstateTreeMedian(trees *[]Tree) (err error) {
+	var values []float64
+	for _, tree := range *trees {
+		values = append(values, float64(tree.Height))
+	}
+
+	fmt.Println(values)
+	l := len(values)
+	if l == 0 {
+		return
+	} else if l%2 == 0 {
+		e.MedianTreeHeight = uint8(values[l/2-1]+values[l/2]) / 2
+	} else {
+		e.MedianTreeHeight = uint8(values[l/2])
+	}
+
+	return
+}
+
 func (t *Tree) CalculateEstateTreeStats() (err error) {
 	if t.X > t.Estate.Length {
 		err = errors.New("outside of boundaries")
@@ -101,9 +121,8 @@ func (t *Tree) CalculateEstateTreeStats() (err error) {
 	} else {
 		median = t.Height
 	}
-	t.Estate.TreeCount++
-
 	t.Estate.MedianTreeHeight = uint8(median)
+	t.Estate.TreeCount++
 
 	t.Estate.UpdatedAt = time.Now()
 
